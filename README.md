@@ -12,21 +12,22 @@ The payload properties are as follows
 
 fade - Boolean whether or not to fade to the next color. True fades; false snaps. <br>
 color - Color object <br>
-Red - RGB red value for the color. Values between 0-255<br>
-Green - RGB green value for the color. Values between 0-255<br> 
-Blue - RGB blue value for the color. Values between 0-255<br>
-Magnitude - Percentage brightness for the color. Values 0-100<br>
+red - RGB red value for the color. Values between 0-255<br>
+green - RGB green value for the color. Values between 0-255<br> 
+blue - RGB blue value for the color. Values between 0-255<br>
+magnitude - Percentage brightness for the color. Values 0-100<br>
+interval - Interval (in seconds) to display each color in a sequence<br>
 
 
 Example payloads
 
-/off
+###/off###
 ```
 {
   "fade": true
 }
 ```
-/color/show
+###/color/show###
 ```
 {
   "color": {
@@ -36,5 +37,27 @@ Example payloads
      "magnitude": 100
   },
   "fade": true
+}
+```
+
+###/sequence/show###
+```
+{
+  "fade": false,
+  "interval": 10,
+  "sequence": [
+     {
+        "red": 255,
+        "green": 35,
+        "blue": 175,
+        "magnitude": 100
+     },
+     {
+        "red": 45,
+        "green": 142,
+        "blue": 235,
+        "magnitude": 40
+     }
+   ]
 }
 ```

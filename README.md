@@ -61,3 +61,12 @@ Example payloads
    ]
 }
 ```
+
+# Installation
+Prerequisites: Raspberry Pi with Java JRE 1.8+ isntalled. 
+
+* copy build jar to pi (Bitvise or scp, for example) 
+* elevate to root console (```sudo -i```) 
+* edit the cron table to execute the jar on startup. 
+  * Edit crontable with ``` crontab -e ``` 
+  * add to file (Jar location assumed): ```@reboot sudo java -jar /home/pi/LightControl/LightControl.jar&```

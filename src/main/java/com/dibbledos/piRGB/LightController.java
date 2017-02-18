@@ -4,6 +4,7 @@ import com.dibbledos.piRGB.lightSystems.LightSystem;
 import com.dibbledos.piRGB.lightSystems.LightSystemProvider;
 import com.dibbledos.piRGB.rest.entities.Color;
 
+import javax.sound.sampled.LineUnavailableException;
 import java.util.List;
 
 public class LightController {
@@ -13,11 +14,18 @@ public class LightController {
     private final double fadeSteps = 25.0; // double to force decimals when used with ints. 25 because higher numbers causes lots of flickering due to rounding in divisions
     private boolean shouldContinueSequence = false;
     private Thread sequenceThread = new Thread();
+    private static MicReader micReader;
+    private static Thread micThread;
+    private static boolean soundSensitive = false;
 
     private LightController(LightSystem lightSystem) {
         this.lightSystem = lightSystem;
         lightSystem.init();
-
+        try {
+            micReader = new MicReader();
+        } catch (LineUnavailableException e) {
+            e.printStackTrace();
+        }
         currentColor = new Color(0, 0, 0, 0);
     }
 
@@ -29,10 +37,12 @@ public class LightController {
         return instance;
     }
 
-    public void showColor(Color requestedColor) {
+    public void showColor(Color requestedColor, boolean soundSensitive) {
         System.out.println("Request to set color to " + requestedColor);
-        stopSequence();
+        resetLights();
+        this.soundSensitive = soundSensitive;
         showColorImpl(requestedColor);
+        startMicProcessing();
     }
 
     private void showColorImpl(Color requestedColor) {
@@ -51,7 +61,7 @@ public class LightController {
     }
 
     public void off() {
-        stopSequence();
+        resetLights();
         System.out.println("Turning all LEDs off");
 
         setPinValue(ColorPin.BLUE, 0);
@@ -59,9 +69,11 @@ public class LightController {
         setPinValue(ColorPin.RED, 0);
     }
 
-    public void fadeTo(Color requestedColor) {
-        stopSequence();
+    public void fadeTo(Color requestedColor, boolean soundSensitive) {
+        resetLights();
+        this.soundSensitive = soundSensitive;
         fadeToImpl(requestedColor);
+        startMicProcessing();
     }
 
     private void fadeToImpl(Color requestedColor) {
@@ -101,7 +113,7 @@ public class LightController {
     }
 
     public void fadeOff() {
-        stopSequence();
+        resetLights();
         System.out.println("Fading off");
         int magnitude = currentColor.getMagnitude();
         for (int i = magnitude; i >= 0; i--) {
@@ -115,9 +127,10 @@ public class LightController {
         }
     }
 
-    public void fadeSequence(List<Color> colors, int showInterval) {
-        stopSequence();
+    public void fadeSequence(List<Color> colors, int showInterval, Boolean soundSensitive) {
+        resetLights();
         shouldContinueSequence = true;
+        this.soundSensitive = soundSensitive;
         sequenceThread = new Thread(() -> {
             while (shouldContinueSequence) {
                 for (Color color : colors) {
@@ -136,10 +149,12 @@ public class LightController {
             System.out.println("Sequence is stopping");
         });
         sequenceThread.start();
+        startMicProcessing();
     }
 
-    public void showSequence(List<Color> colors, int showInterval) {
-        stopSequence();
+    public void showSequence(List<Color> colors, int showInterval, Boolean soundSensitive) {
+        resetLights();
+        this.soundSensitive = soundSensitive;
         shouldContinueSequence = true;
         sequenceThread = new Thread(() -> {
             while (shouldContinueSequence) {
@@ -159,6 +174,7 @@ public class LightController {
             System.out.println("Sequence is stopping");
         });
         sequenceThread.start();
+        startMicProcessing();
     }
 
     //Utility methods
@@ -178,14 +194,41 @@ public class LightController {
         return (int) Math.round(colorValue * (magnitude / 100.0));
     }
 
-    private void stopSequence() {
+    private void resetLights() {
         shouldContinueSequence = false;
+        soundSensitive = false;
         try {
             System.out.println("Waiting for existing sequence to stop");
             sequenceThread.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
+        setPinValue(ColorPin.BLUE, 0);
+        setPinValue(ColorPin.GREEN, 0);
+        setPinValue(ColorPin.RED, 0);
         System.out.println("Stopped sequence thread");
+    }
+
+    private void startMicProcessing() {
+        micThread = new Thread(new Runnable() {
+            public void run() {
+                while (soundSensitive) {
+                    double soundScale = micReader.getLevelScalingNumber();
+                    int blue = adjustForMagnitude(currentColor.getBluePercent(), currentColor.getMagnitude() * soundScale);
+                    int green = adjustForMagnitude(currentColor.getGreenPercent(), currentColor.getMagnitude() * soundScale);
+                    int red = adjustForMagnitude(currentColor.getRedPercent(), currentColor.getMagnitude() * soundScale);
+
+                    System.out.println(String.format("Writing pin values red: %d green %d blue %d", red, green, blue));
+
+                    lightSystem.setPinPercentage(ColorPin.BLUE, blue);
+                    lightSystem.setPinPercentage(ColorPin.GREEN, green);
+                    lightSystem.setPinPercentage(ColorPin.RED, red);
+
+                    System.out.println("Current color values are " + currentColor);
+                }
+            }
+        });
+        micThread.start();
     }
 }

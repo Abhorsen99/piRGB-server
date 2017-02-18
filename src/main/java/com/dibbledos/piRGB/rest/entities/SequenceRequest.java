@@ -8,9 +8,10 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SequenceRequest {
 
-    private Boolean fade;
+    private Boolean fade = false;
     private Integer interval;
     private List<Color> sequence = null;
+    private Boolean soundSensitive = false;
 
     public Boolean getFade() {
         return fade;
@@ -36,4 +37,11 @@ public class SequenceRequest {
         this.sequence = sequence;
     }
 
+    public Boolean getSoundSensitive() {
+        return soundSensitive;
+    }
+
+    public void setSoundSensitive(Boolean soundSensitive) {
+        this.soundSensitive = soundSensitive;
+    }
 }

@@ -7,7 +7,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class ShowColorRequest {
 
     private Color color;
-    private Boolean fade;
+    private Boolean fade = false;
+    private Boolean soundSensitive = false;
 
     public Color getColor() {
         return color;
@@ -25,4 +26,11 @@ public class ShowColorRequest {
         this.fade = fade;
     }
 
+    public Boolean getSoundSensitive() {
+        return soundSensitive;
+    }
+
+    public void setSoundSensitive(Boolean soundSensitive) {
+        this.soundSensitive = soundSensitive;
+    }
 }

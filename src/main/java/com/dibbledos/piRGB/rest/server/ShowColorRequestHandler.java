@@ -28,9 +28,9 @@ public class ShowColorRequestHandler extends BaseColorRequestHandler {
                     )
             );
             if(shouldFade){
-                controller.fadeTo(requestedColor);
+                controller.fadeTo(requestedColor, request.getSoundSensitive());
             }else{
-                controller.showColor(requestedColor);
+                controller.showColor(requestedColor, request.getSoundSensitive());
             }
 
             String response = "Color: " + requestedColor.toString();

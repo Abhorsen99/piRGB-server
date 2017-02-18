@@ -1,29 +1,30 @@
-package dibble.chris.lightcontrol;
+package com.dibbledos.piRGB;
 
-import com.pi4j.wiringpi.Gpio;
-import com.pi4j.wiringpi.SoftPwm;
+import com.dibbledos.piRGB.lightSystems.LightSystem;
+import com.dibbledos.piRGB.lightSystems.LightSystemProvider;
+import com.dibbledos.piRGB.rest.entities.Color;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class LightController {
     private static LightController instance;
+    private final LightSystem lightSystem;
     private Color currentColor;
     private final double fadeSteps = 25.0; // double to force decimals when used with ints. 25 because higher numbers causes lots of flickering due to rounding in divisions
     private boolean shouldContinueSequence = false;
     private Thread sequenceThread = new Thread();
 
-    private LightController() {
-        Gpio.wiringPiSetup();
+    private LightController(LightSystem lightSystem) {
+        this.lightSystem = lightSystem;
+        lightSystem.init();
 
-        SoftPwm.softPwmCreate(ColorPin.BLUE.getValue(), 0, 100);
-        SoftPwm.softPwmCreate(ColorPin.GREEN.getValue(), 0, 100);
-        SoftPwm.softPwmCreate(ColorPin.RED.getValue(), 0, 100);
         currentColor = new Color(0, 0, 0, 0);
     }
 
     public static LightController getInstance() {
         if (instance == null) {
-            instance = new LightController();
+            LightSystem lightSystem = new LightSystemProvider().getLightSystem();
+            instance = new LightController(lightSystem);
         }
         return instance;
     }
@@ -114,7 +115,7 @@ public class LightController {
         }
     }
 
-    public void fadeSequence(ArrayList<Color> colors, int showInterval) {
+    public void fadeSequence(List<Color> colors, int showInterval) {
         stopSequence();
         shouldContinueSequence = true;
         sequenceThread = new Thread(() -> {
@@ -137,7 +138,7 @@ public class LightController {
         sequenceThread.start();
     }
 
-    public void showSequence(ArrayList<Color> colors, int showInterval) {
+    public void showSequence(List<Color> colors, int showInterval) {
         stopSequence();
         shouldContinueSequence = true;
         sequenceThread = new Thread(() -> {
@@ -162,7 +163,8 @@ public class LightController {
 
     //Utility methods
     private void setPinValue(ColorPin pin, int value) {
-        SoftPwm.softPwmWrite(pin.getValue(), value);
+        lightSystem.setPinPercentage(pin, value);
+
         if (pin == ColorPin.BLUE) {
             currentColor.setPercentBlue(value);
         } else if (pin == ColorPin.GREEN) {

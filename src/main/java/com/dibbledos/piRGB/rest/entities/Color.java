@@ -1,15 +1,25 @@
-package dibble.chris.lightcontrol;
+package com.dibbledos.piRGB.rest.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Color {
     @Override
     public String toString() {
         return String.format("Red: %d Green: %d Blue: %d Magnitude: %d", red255, green255, blue255, magnitude);
     }
 
+    @JsonProperty("red")
     private int red255;
+    @JsonProperty("green")
     private int green255;
+    @JsonProperty("blue")
     private int blue255;
+    @JsonProperty("magnitude")
     private int magnitude;
+
+    public Color(){}
 
     public Color(int red255, int green255, int blue255, int magnitude) {
         this.red255 = red255;

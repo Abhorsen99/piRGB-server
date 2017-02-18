@@ -1,4 +1,4 @@
-package dibble.chris.lightcontrol;
+package com.dibbledos.piRGB;
 
 public enum ColorPin {
     BLUE(1, "blue"), GREEN(2, "green"), RED(3, "red");

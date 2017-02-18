@@ -1,8 +1,10 @@
-package dibble.chris.lightcontrol;
+package com.dibbledos.piRGB.rest.server;
 
+import com.dibbledos.piRGB.rest.entities.Color;
+import com.dibbledos.piRGB.rest.entities.ShowColorRequest;
+import com.dibbledos.piRGB.rest.server.BaseColorRequestHandler;
 import com.sun.net.httpserver.HttpExchange;
 import org.apache.commons.io.IOUtils;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -15,18 +17,16 @@ public class ShowColorRequestHandler extends BaseColorRequestHandler {
 
         if (requestType.equalsIgnoreCase("POST")) {
             System.out.println("Show color request received");
-            String payloadJson = IOUtils.toString(t.getRequestBody());
-            JSONObject requestObject = new JSONObject(payloadJson);
-            JSONObject color = requestObject.getJSONObject("color");
-            Color requestedColor = convertJsonToColor(color);
-            boolean shouldFade = findIfFadingRequested(requestObject);
+            ShowColorRequest request = mapper.readValue(t.getRequestBody(), ShowColorRequest.class);
+            Color requestedColor = request.getColor();
+            boolean shouldFade = request.getFade();
 
-                    System.out.println(
-                            String.format("Requested color: %s. Are we fading? %b",
-                                    requestedColor,
-                                    shouldFade
-                            )
-                    );
+            System.out.println(
+                    String.format("Requested color: %s. Are we fading? %b",
+                            requestedColor,
+                            shouldFade
+                    )
+            );
             if(shouldFade){
                 controller.fadeTo(requestedColor);
             }else{

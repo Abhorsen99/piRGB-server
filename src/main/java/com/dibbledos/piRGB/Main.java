@@ -1,5 +1,8 @@
-package dibble.chris.lightcontrol;
+package com.dibbledos.piRGB;
 
+import com.dibbledos.piRGB.rest.server.ColorSequenceRequestHandler;
+import com.dibbledos.piRGB.rest.server.OffColorRequestHandler;
+import com.dibbledos.piRGB.rest.server.ShowColorRequestHandler;
 import com.sun.net.httpserver.HttpServer;
 import java.net.InetSocketAddress;
 

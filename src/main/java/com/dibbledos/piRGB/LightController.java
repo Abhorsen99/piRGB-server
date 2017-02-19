@@ -17,14 +17,16 @@ public class LightController {
     private static MicReader micReader;
     private static Thread micThread;
     private static boolean soundSensitive = false;
+    private boolean micPresent = true;
 
     private LightController(LightSystem lightSystem) {
         this.lightSystem = lightSystem;
         lightSystem.init();
         try {
             micReader = new MicReader();
-        } catch (LineUnavailableException e) {
+        } catch (Exception e) {
             e.printStackTrace();
+            micPresent = false;
         }
         currentColor = new Color(0, 0, 0, 0);
     }
@@ -204,9 +206,6 @@ public class LightController {
             e.printStackTrace();
         }
 
-        setPinValue(ColorPin.BLUE, 0);
-        setPinValue(ColorPin.GREEN, 0);
-        setPinValue(ColorPin.RED, 0);
         System.out.println("Stopped sequence thread");
     }
 
@@ -229,6 +228,8 @@ public class LightController {
                 }
             }
         });
-        micThread.start();
+        if(micPresent) {
+            micThread.start();
+        }
     }
 }

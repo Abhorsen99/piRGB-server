@@ -212,19 +212,34 @@ public class LightController {
     private void startMicProcessing() {
         micThread = new Thread(new Runnable() {
             public void run() {
+                boolean isBase = false;
                 while (soundSensitive) {
-                    double soundScale = micReader.getLevelScalingNumber();
-                    int blue = adjustForMagnitude(currentColor.getBluePercent(), currentColor.getMagnitude() * soundScale);
-                    int green = adjustForMagnitude(currentColor.getGreenPercent(), currentColor.getMagnitude() * soundScale);
-                    int red = adjustForMagnitude(currentColor.getRedPercent(), currentColor.getMagnitude() * soundScale);
+                    double soundLevel = micReader.getLevelScalingNumber();
+                    int blue, green, red;
+                    final int baseBrightness = 10;
+                    final double baseSoundThreshold = 0.70;
 
-                    System.out.println(String.format("Writing pin values red: %d green %d blue %d", red, green, blue));
-
-                    lightSystem.setPinPercentage(ColorPin.BLUE, blue);
-                    lightSystem.setPinPercentage(ColorPin.GREEN, green);
-                    lightSystem.setPinPercentage(ColorPin.RED, red);
-
-                    System.out.println("Current color values are " + currentColor);
+                    if(soundLevel <= baseSoundThreshold){
+                        blue = adjustForMagnitude(currentColor.getBluePercent(), baseBrightness);
+                        green = adjustForMagnitude(currentColor.getGreenPercent(), baseBrightness);
+                        red = adjustForMagnitude(currentColor.getRedPercent(), baseBrightness);
+                        if(!isBase){
+                            lightSystem.setPinPercentage(ColorPin.BLUE, blue);
+                            lightSystem.setPinPercentage(ColorPin.GREEN, green);
+                            lightSystem.setPinPercentage(ColorPin.RED, red);
+                        }
+                        isBase = true;
+                    }else{
+                        double amountAboveThreshold = soundLevel - baseSoundThreshold;
+                        double multiplier = 3;
+                        blue = adjustForMagnitude(currentColor.getBluePercent(), currentColor.getMagnitude() * (amountAboveThreshold * multiplier));
+                        green = adjustForMagnitude(currentColor.getGreenPercent(), currentColor.getMagnitude() * (amountAboveThreshold * multiplier));
+                        red = adjustForMagnitude(currentColor.getRedPercent(), currentColor.getMagnitude() * (amountAboveThreshold * multiplier));
+                        isBase = false;
+                        lightSystem.setPinPercentage(ColorPin.BLUE, blue);
+                        lightSystem.setPinPercentage(ColorPin.GREEN, green);
+                        lightSystem.setPinPercentage(ColorPin.RED, red);
+                    }
                 }
             }
         });

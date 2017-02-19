@@ -10,7 +10,8 @@ Each request requires a JSON payload to how to perform the requested action.
 
 The payload properties are as follows
 
-fade - Boolean whether or not to fade to the next color. True fades; false snaps. <br>
+fade - Boolean whether or not to fade to the next color. True fades; false snaps. Default false.<br>
+soundSensitive - Boolean whether or not to have lights react to sound. True increases light brightness during loud moments; false disables sound sensitivity. Default false.<br>
 color - Color object <br>
 red - RGB red value for the color. Values between 0-255<br>
 green - RGB green value for the color. Values between 0-255<br> 
@@ -36,7 +37,8 @@ Example payloads
      "blue": 175,
      "magnitude": 100
   },
-  "fade": true
+  "fade": true,
+  "soundSensitive":true
 }
 ```
 
@@ -45,6 +47,7 @@ Example payloads
 {
   "fade": false,
   "interval": 10,
+  "soundSensitive":true,
   "sequence": [
      {
         "red": 255,
@@ -63,7 +66,7 @@ Example payloads
 ```
 
 # Installation
-Prerequisites: Raspberry Pi with Java JRE 1.8+ isntalled. 
+Prerequisites: Raspberry Pi with Java JRE 1.8+ isntalled. Sound sensitivity requires microphone connected to Pi
 
 * copy build jar to pi (Bitvise or scp, for example) 
 * elevate to root console (```sudo -i```) 

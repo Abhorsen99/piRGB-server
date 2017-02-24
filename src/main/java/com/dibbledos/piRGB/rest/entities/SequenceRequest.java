@@ -3,6 +3,7 @@ package com.dibbledos.piRGB.rest.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -10,7 +11,7 @@ public class SequenceRequest {
 
     private Boolean fade = false;
     private Integer interval;
-    private List<Color> sequence = null;
+    private List<Color> sequence = new ArrayList<>();
     private Boolean soundSensitive = false;
 
     public Boolean getFade() {

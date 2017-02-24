@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class OffRequest {
 
-    private Boolean fade;
+    private Boolean fade = false;
 
     public Boolean getFade() {
         return fade;

@@ -11,13 +11,13 @@ public class Color {
     }
 
     @JsonProperty("red")
-    private int red255;
+    private int red255 = 0;
     @JsonProperty("green")
-    private int green255;
+    private int green255 = 0;
     @JsonProperty("blue")
-    private int blue255;
+    private int blue255 = 0;
     @JsonProperty("magnitude")
-    private int magnitude;
+    private int magnitude = 0;
 
     public Color(){}
 

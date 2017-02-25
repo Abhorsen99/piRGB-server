@@ -3,8 +3,8 @@ package com.dibbledos.piRGB;
 import com.dibbledos.piRGB.lightSystems.LightSystem;
 import com.dibbledos.piRGB.lightSystems.LightSystemProvider;
 import com.dibbledos.piRGB.rest.entities.Color;
+import com.dibbledos.piRGB.soundSensitivity.MicReader;
 
-import javax.sound.sampled.LineUnavailableException;
 import java.util.List;
 
 public class LightController {

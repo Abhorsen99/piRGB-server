@@ -1,31 +1,25 @@
-package com.dibbledos.piRGB;
+package com.dibbledos.piRGB.soundSensitivity;
 
 import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.TargetDataLine;
 
 // Vigorous inspiration taken from http://proteo.me.uk/2009/10/sound-level-monitoring-in-java/
 public class MicReader {
     private final int SAMPLES_PER_SECOND = 32000;
     private final int AVERAGES_CALCULATED_PER_SECOND = 5;
     private byte[] sample = new byte[SAMPLES_PER_SECOND / AVERAGES_CALCULATED_PER_SECOND];
-    private TargetDataLine microphone;
+    private Microphone mic;
 
     public MicReader() throws LineUnavailableException {
-        init();
-    }
-
-    private void init() throws LineUnavailableException {
         AudioFormat format = new AudioFormat(SAMPLES_PER_SECOND, 16, 1, true, false);
-        microphone = AudioSystem.getTargetDataLine(format);
+        mic = new Microphone(format);
 
-        microphone.open();
-        microphone.start();
+        mic.open();
+        mic.start();
     }
 
     public double getCurrentLevelPercent()  {
-        microphone.read(sample, 0, sample.length);
+        sample = mic.read(0, sample.length);
         int rawVolume = getMaxValueFromInput(sample);
         double adjustedVolume = applyLogAndScale(rawVolume);
         System.out.println(String.format("Raw: %s. Adjusted: %s", rawVolume, adjustedVolume));

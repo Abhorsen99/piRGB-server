@@ -10,7 +10,7 @@ import java.util.List;
 public class SequenceRequest {
 
     private Boolean fade = false;
-    private Integer interval;
+    private Integer interval = 1;
     private List<Color> sequence = new ArrayList<>();
     private Boolean soundSensitive = false;
 

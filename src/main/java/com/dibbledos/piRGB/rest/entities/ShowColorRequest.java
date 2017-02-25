@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ShowColorRequest {
 
-    private Color color;
+    private Color color = new Color();
     private Boolean fade = false;
     private Boolean soundSensitive = false;
 

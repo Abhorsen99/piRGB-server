@@ -1,43 +1,38 @@
 package com.dibbledos.piRGB.rest.server;
 
+import com.dibbledos.piRGB.LightController;
 import com.dibbledos.piRGB.rest.entities.Color;
 import com.dibbledos.piRGB.rest.entities.SequenceRequest;
-import com.dibbledos.piRGB.rest.server.BaseColorRequestHandler;
-import com.sun.net.httpserver.HttpExchange;
-import org.apache.commons.io.IOUtils;
+import com.fasterxml.jackson.databind.JsonNode;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.List;
 
 public class ColorSequenceRequestHandler extends BaseColorRequestHandler {
 
+    public ColorSequenceRequestHandler(LightController controller) {
+        super(controller);
+    }
+
     @Override
-    public void handle(HttpExchange httpExchange) throws IOException {
-        String requestType = httpExchange.getRequestMethod(); //Post, get, etc
+    public String processRequest(JsonNode input) throws IOException {
+        System.out.println("Color sequence requested");
+        SequenceRequest request = mapper.convertValue(input, SequenceRequest.class);
+        List<Color> colors = request.getSequence();
+        int showInterval = request.getInterval();
 
-        if (requestType.equalsIgnoreCase("POST")) {
-            System.out.println("Color sequence requested");
-            SequenceRequest request = mapper.readValue(httpExchange.getRequestBody(), SequenceRequest.class);
-            List<Color> colors = request.getSequence();
-            int showInterval = request.getInterval();
+        boolean shouldFade = request.getFade();
 
-            boolean shouldFade = request.getFade();
+        Thread t1 = new Thread(() -> {
+            if (shouldFade) {
+                controller.fadeSequence(colors, showInterval, request.getSoundSensitive());
+            } else {
+                controller.showSequence(colors, showInterval, request.getSoundSensitive());
+            }
+        });
+        t1.start();
 
-            Thread t1 = new Thread(() -> {
-                if (shouldFade) {
-                    controller.fadeSequence(colors, showInterval, request.getSoundSensitive());
-                } else {
-                    controller.showSequence(colors, showInterval, request.getSoundSensitive());
-                }
-            });
-            t1.start();
-
-            String response = "Color sequence requested";
-            httpExchange.sendResponseHeaders(200, response.length());
-            OutputStream os = httpExchange.getResponseBody();
-            os.write(response.getBytes());
-            os.close();
-        }
+        String response = "Color sequence requested";
+        return response;
     }
 }

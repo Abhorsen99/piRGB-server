@@ -2,6 +2,8 @@ package com.dibbledos.piRGB.rest.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Color {
@@ -91,5 +93,31 @@ public class Color {
 
     private int convertPinPercentageTo255(int pinPercent) {
         return  (int)Math.round((pinPercent / 100.0) * 255.0);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Color color = (Color) o;
+
+        return new EqualsBuilder()
+                .append(red255, color.red255)
+                .append(green255, color.green255)
+                .append(blue255, color.blue255)
+                .append(magnitude, color.magnitude)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .append(red255)
+                .append(green255)
+                .append(blue255)
+                .append(magnitude)
+                .toHashCode();
     }
 }

@@ -5,14 +5,15 @@ import javax.sound.sampled.LineUnavailableException;
 
 // Vigorous inspiration taken from http://proteo.me.uk/2009/10/sound-level-monitoring-in-java/
 public class MicReader {
-    private final int SAMPLES_PER_SECOND = 32000;
-    private final int AVERAGES_CALCULATED_PER_SECOND = 5;
+    protected final int SAMPLES_PER_SECOND = 32000;
+    protected final int AVERAGES_CALCULATED_PER_SECOND = 5;
     private byte[] sample = new byte[SAMPLES_PER_SECOND / AVERAGES_CALCULATED_PER_SECOND];
     private Microphone mic;
 
-    public MicReader() throws LineUnavailableException {
+    public MicReader(Microphone microphone) throws LineUnavailableException {
+        mic = microphone;
         AudioFormat format = new AudioFormat(SAMPLES_PER_SECOND, 16, 1, true, false);
-        mic = new Microphone(format);
+        mic.setFormat(format);
 
         mic.open();
         mic.start();
@@ -31,7 +32,7 @@ public class MicReader {
     }
 
     private double applyLogAndScale(double rawVolume){
-        return Math.log10(rawVolume) * 22.1545924031; //The max raw value is 32639. multiplying like this makes that value map to 100
+        return rawVolume == 0 ? 0 : Math.log10(rawVolume) * 22.1545924031; //The max raw value is 32639. multiplying like this makes that value map to 100
     }
 
     /**

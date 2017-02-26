@@ -4,6 +4,7 @@ import com.dibbledos.piRGB.lightSystems.LightSystem;
 import com.dibbledos.piRGB.lightSystems.LightSystemProvider;
 import com.dibbledos.piRGB.rest.entities.Color;
 import com.dibbledos.piRGB.soundSensitivity.MicReader;
+import com.dibbledos.piRGB.soundSensitivity.Microphone;
 
 import java.util.List;
 
@@ -23,7 +24,7 @@ public class LightController {
         this.lightSystem = lightSystem;
         lightSystem.init();
         try {
-            micReader = new MicReader();
+            micReader = new MicReader(new Microphone());
         } catch (Exception e) {
             e.printStackTrace();
             micPresent = false;

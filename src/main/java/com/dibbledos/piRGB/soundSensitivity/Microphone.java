@@ -8,7 +8,9 @@ import javax.sound.sampled.TargetDataLine;
 public class Microphone {
     private TargetDataLine line;
 
-    public Microphone(AudioFormat format) throws LineUnavailableException {
+    public Microphone(){ }
+
+    public void setFormat(AudioFormat format) throws LineUnavailableException {
         line = AudioSystem.getTargetDataLine(format);
     }
 

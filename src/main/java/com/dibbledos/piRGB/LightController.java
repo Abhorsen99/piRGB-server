@@ -6,15 +6,16 @@ import com.dibbledos.piRGB.soundSensitivity.MicReader;
 
 import java.util.List;
 
+//TODO after getting this under test, a lot of cleanup can happen in here
 public class LightController {
     private final LightSystem lightSystem;
-    private Color currentColor;
+    protected Color currentColor;
     private final double fadeSteps = 25.0; // double to force decimals when used with ints. 25 because higher numbers causes lots of flickering due to rounding in divisions
-    private boolean shouldContinueSequence = false;
+    protected boolean shouldContinueSequence = false;
     private Thread sequenceThread = new Thread();
     private static MicReader micReader;
     private static Thread micThread;
-    private static boolean soundSensitive = false;
+    protected static boolean soundSensitive = false;
 
     public LightController(LightSystem lightSystem, MicReader micReader) {
         this.lightSystem = lightSystem;
@@ -41,7 +42,7 @@ public class LightController {
         setPinValue(ColorPin.BLUE, blue);
         setPinValue(ColorPin.GREEN, green);
         setPinValue(ColorPin.RED, red);
-        currentColor.setMagnitude(requestedColor.getMagnitude());
+        currentColor = requestedColor;
 
         System.out.println("Current color values are " + currentColor);
     }
@@ -53,6 +54,7 @@ public class LightController {
         setPinValue(ColorPin.BLUE, 0);
         setPinValue(ColorPin.GREEN, 0);
         setPinValue(ColorPin.RED, 0);
+        currentColor = new Color();
     }
 
     public void fadeTo(Color requestedColor, boolean soundSensitive) {
@@ -166,21 +168,13 @@ public class LightController {
     //Utility methods
     private void setPinValue(ColorPin pin, int value) {
         lightSystem.setPinPercentage(pin, value);
-
-        if (pin == ColorPin.BLUE) {
-            currentColor.setPercentBlue(value);
-        } else if (pin == ColorPin.GREEN) {
-            currentColor.setPercentGreen(value);
-        } else if (pin == ColorPin.RED) {
-            currentColor.setPercentRed(value);
-        }
     }
 
-    private int adjustForMagnitude(double colorValue, double magnitude) {
+    protected int adjustForMagnitude(double colorValue, double magnitude) {
         return (int) Math.round(colorValue * (magnitude / 100.0));
     }
 
-    private void resetLights() {
+    protected void resetLights() {
         shouldContinueSequence = false;
         soundSensitive = false;
         try {
@@ -193,7 +187,7 @@ public class LightController {
         System.out.println("Stopped sequence thread");
     }
 
-    private void startMicProcessing() {
+    protected void startMicProcessing() {
         micThread = new Thread(() -> {
             boolean isBase = false;
             while (soundSensitive) {

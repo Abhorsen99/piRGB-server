@@ -9,14 +9,24 @@ public class MicReader {
     protected final int AVERAGES_CALCULATED_PER_SECOND = 5;
     private byte[] sample = new byte[SAMPLES_PER_SECOND / AVERAGES_CALCULATED_PER_SECOND];
     private Microphone mic;
+    private Boolean micPresent = true;
 
-    public MicReader(Microphone microphone) throws LineUnavailableException {
-        mic = microphone;
-        AudioFormat format = new AudioFormat(SAMPLES_PER_SECOND, 16, 1, true, false);
-        mic.setFormat(format);
+    public MicReader(Microphone microphone) {
+        try {
+            mic = microphone;
+            AudioFormat format = new AudioFormat(SAMPLES_PER_SECOND, 16, 1, true, false);
+            mic.setFormat(format);
 
-        mic.open();
-        mic.start();
+            mic.open();
+            mic.start();
+        }catch (LineUnavailableException e){
+            micPresent = false;
+            System.out.println("Mic unavailable " + e.getMessage());
+        }
+    }
+
+    public Boolean isMicPresent(){
+        return micPresent;
     }
 
     public double getCurrentLevelPercent()  {

@@ -1,15 +1,12 @@
 package com.dibbledos.piRGB;
 
 import com.dibbledos.piRGB.lightSystems.LightSystem;
-import com.dibbledos.piRGB.lightSystems.LightSystemProvider;
 import com.dibbledos.piRGB.rest.entities.Color;
 import com.dibbledos.piRGB.soundSensitivity.MicReader;
-import com.dibbledos.piRGB.soundSensitivity.Microphone;
 
 import java.util.List;
 
 public class LightController {
-    private static LightController instance;
     private final LightSystem lightSystem;
     private Color currentColor;
     private final double fadeSteps = 25.0; // double to force decimals when used with ints. 25 because higher numbers causes lots of flickering due to rounding in divisions
@@ -18,26 +15,12 @@ public class LightController {
     private static MicReader micReader;
     private static Thread micThread;
     private static boolean soundSensitive = false;
-    private boolean micPresent = true;
 
-    private LightController(LightSystem lightSystem) {
+    public LightController(LightSystem lightSystem, MicReader micReader) {
         this.lightSystem = lightSystem;
         lightSystem.init();
-        try {
-            micReader = new MicReader(new Microphone());
-        } catch (Exception e) {
-            e.printStackTrace();
-            micPresent = false;
-        }
+        this.micReader = micReader;
         currentColor = new Color(0, 0, 0, 0);
-    }
-
-    public static LightController getInstance() {
-        if (instance == null) {
-            LightSystem lightSystem = new LightSystemProvider().getLightSystem();
-            instance = new LightController(lightSystem);
-        }
-        return instance;
     }
 
     public void showColor(Color requestedColor, boolean soundSensitive) {
@@ -211,40 +194,38 @@ public class LightController {
     }
 
     private void startMicProcessing() {
-        micThread = new Thread(new Runnable() {
-            public void run() {
-                boolean isBase = false;
-                while (soundSensitive) {
-                    double soundLevel = micReader.getLevelScalingNumber();
-                    int blue, green, red;
-                    final int baseBrightness = 10;
-                    final double baseSoundThreshold = 0.70;
+        micThread = new Thread(() -> {
+            boolean isBase = false;
+            while (soundSensitive) {
+                double soundLevel = micReader.getLevelScalingNumber();
+                int blue, green, red;
+                final int baseBrightness = 10;
+                final double baseSoundThreshold = 0.70;
 
-                    if(soundLevel <= baseSoundThreshold){
-                        blue = adjustForMagnitude(currentColor.getBluePercent(), baseBrightness);
-                        green = adjustForMagnitude(currentColor.getGreenPercent(), baseBrightness);
-                        red = adjustForMagnitude(currentColor.getRedPercent(), baseBrightness);
-                        if(!isBase){
-                            lightSystem.setPinPercentage(ColorPin.BLUE, blue);
-                            lightSystem.setPinPercentage(ColorPin.GREEN, green);
-                            lightSystem.setPinPercentage(ColorPin.RED, red);
-                        }
-                        isBase = true;
-                    }else{
-                        double amountAboveThreshold = soundLevel - baseSoundThreshold;
-                        double multiplier = 3;
-                        blue = adjustForMagnitude(currentColor.getBluePercent(), currentColor.getMagnitude() * (amountAboveThreshold * multiplier));
-                        green = adjustForMagnitude(currentColor.getGreenPercent(), currentColor.getMagnitude() * (amountAboveThreshold * multiplier));
-                        red = adjustForMagnitude(currentColor.getRedPercent(), currentColor.getMagnitude() * (amountAboveThreshold * multiplier));
-                        isBase = false;
+                if(soundLevel <= baseSoundThreshold){
+                    blue = adjustForMagnitude(currentColor.getBluePercent(), baseBrightness);
+                    green = adjustForMagnitude(currentColor.getGreenPercent(), baseBrightness);
+                    red = adjustForMagnitude(currentColor.getRedPercent(), baseBrightness);
+                    if(!isBase){
                         lightSystem.setPinPercentage(ColorPin.BLUE, blue);
                         lightSystem.setPinPercentage(ColorPin.GREEN, green);
                         lightSystem.setPinPercentage(ColorPin.RED, red);
                     }
+                    isBase = true;
+                }else{
+                    double amountAboveThreshold = soundLevel - baseSoundThreshold;
+                    double multiplier = 3;
+                    blue = adjustForMagnitude(currentColor.getBluePercent(), currentColor.getMagnitude() * (amountAboveThreshold * multiplier));
+                    green = adjustForMagnitude(currentColor.getGreenPercent(), currentColor.getMagnitude() * (amountAboveThreshold * multiplier));
+                    red = adjustForMagnitude(currentColor.getRedPercent(), currentColor.getMagnitude() * (amountAboveThreshold * multiplier));
+                    isBase = false;
+                    lightSystem.setPinPercentage(ColorPin.BLUE, blue);
+                    lightSystem.setPinPercentage(ColorPin.GREEN, green);
+                    lightSystem.setPinPercentage(ColorPin.RED, red);
                 }
             }
         });
-        if(micPresent) {
+        if(micReader.isMicPresent()) {
             micThread.start();
         }
     }

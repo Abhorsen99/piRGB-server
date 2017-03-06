@@ -49,9 +49,8 @@ public class MicReader {
      * Theoretical max is 32639
      */
     private short getMaxValueFromInput(byte[] buffer){
-        short max;
-            max = (short) (buffer[0] + (buffer[1] << 8));
-            for (int p=2;p<buffer.length-1;p+=2) {
+        short max = 0;
+            for (int p=0; p<buffer.length-1; p+=2) {
                 short thisValue = (short) (buffer[p] + (buffer[p+1] << 8));
                 if (thisValue>max) max=thisValue;
             }

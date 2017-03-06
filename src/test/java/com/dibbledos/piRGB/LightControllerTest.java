@@ -7,10 +7,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
 
+import sun.plugin.dom.exception.InvalidStateException;
+
+import java.util.Random;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.verify;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 class LightControllerTest {
     @Mock
@@ -111,6 +116,46 @@ class LightControllerTest {
         controller.resetLights();
         assertFalse(controller.soundSensitive);
         assertFalse(controller.shouldContinueSequence);
+    }
+
+    @Test
+    void testSoundSensitiveLightsNeverGoBelow10() throws InterruptedException {
+        controller.currentColor = new Color(255, 255, 255, 100);
+
+        doThrow(new InvalidStateException("Level too low")).when(lightSystem).setPinPercentage(any(), Matchers.intThat(new Below10()));
+        Random rng = new Random();
+        for(int i = 0; i < 10000; i++) {
+            double micInput = rng.nextDouble();
+            System.out.println("Level " + micInput);
+            controller.updateForSoundLevel(micInput);
+        }
+    }
+
+    @Test
+    void testSoundSensitiveLightsGives10MagnitudeForNoSound() throws InterruptedException {
+        controller.currentColor = new Color(255, 255, 255, 100);
+        double micInput = 0;
+        controller.updateForSoundLevel(micInput);
+        verify(lightSystem, times(3)).setPinPercentage(any(), eq(10));
+    }
+
+    @Test
+    void testSoundSensitiveLightsGives100MagnitudeForFullSound() throws InterruptedException {
+        controller.currentColor = new Color(255, 255, 255, 100);
+        double micInput = 1;
+        controller.updateForSoundLevel(micInput);
+        verify(lightSystem, times(3)).setPinPercentage(any(), eq(100));
+    }
+
+    class Below10 implements ArgumentMatcher<Integer>{
+        @Override
+        public boolean matches(Integer argument) {
+            if(argument < 10){
+                System.out.println("Was executed with: " + argument);
+                return true;
+            }
+            return false;
+        }
     }
 
     public static class TestLightController extends LightController{

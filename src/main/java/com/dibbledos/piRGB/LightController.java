@@ -16,6 +16,7 @@ public class LightController {
     private static MicReader micReader;
     private static Thread micThread;
     protected static boolean soundSensitive = false;
+    protected boolean isBase = false;
 
     public LightController(LightSystem lightSystem, MicReader micReader) {
         this.lightSystem = lightSystem;
@@ -188,39 +189,46 @@ public class LightController {
     }
 
     protected void startMicProcessing() {
-        micThread = new Thread(() -> {
-            boolean isBase = false;
-            while (soundSensitive) {
-                double soundLevel = micReader.getLevelScalingNumber();
-                int blue, green, red;
-                final int baseBrightness = 10;
-                final double baseSoundThreshold = 0.70;
-
-                if(soundLevel <= baseSoundThreshold){
-                    blue = adjustForMagnitude(currentColor.getBluePercent(), baseBrightness);
-                    green = adjustForMagnitude(currentColor.getGreenPercent(), baseBrightness);
-                    red = adjustForMagnitude(currentColor.getRedPercent(), baseBrightness);
-                    if(!isBase){
-                        lightSystem.setPinPercentage(ColorPin.BLUE, blue);
-                        lightSystem.setPinPercentage(ColorPin.GREEN, green);
-                        lightSystem.setPinPercentage(ColorPin.RED, red);
-                    }
-                    isBase = true;
-                }else{
-                    double amountAboveThreshold = soundLevel - baseSoundThreshold;
-                    double multiplier = 3;
-                    blue = adjustForMagnitude(currentColor.getBluePercent(), currentColor.getMagnitude() * (amountAboveThreshold * multiplier));
-                    green = adjustForMagnitude(currentColor.getGreenPercent(), currentColor.getMagnitude() * (amountAboveThreshold * multiplier));
-                    red = adjustForMagnitude(currentColor.getRedPercent(), currentColor.getMagnitude() * (amountAboveThreshold * multiplier));
-                    isBase = false;
-                    lightSystem.setPinPercentage(ColorPin.BLUE, blue);
-                    lightSystem.setPinPercentage(ColorPin.GREEN, green);
-                    lightSystem.setPinPercentage(ColorPin.RED, red);
-                }
-            }
-        });
+        micThread = new Thread(() -> updateForSounds());
         if(micReader.isMicPresent()) {
             micThread.start();
+        }
+    }
+
+    private void updateForSounds() {
+        isBase = false;
+        while (soundSensitive) {
+            double soundLevel = micReader.getLevelScalingNumber();
+            updateForSoundLevel(soundLevel);
+        }
+    }
+
+    protected void updateForSoundLevel(double soundLevel) {
+        int blue, green, red;
+        final int baseBrightness = 10;
+        final double baseSoundThreshold = 0.70;
+
+        if(soundLevel <= baseSoundThreshold){
+            if(!isBase){
+                blue = adjustForMagnitude(currentColor.getBluePercent(), baseBrightness);
+                green = adjustForMagnitude(currentColor.getGreenPercent(), baseBrightness);
+                red = adjustForMagnitude(currentColor.getRedPercent(), baseBrightness);
+                lightSystem.setPinPercentage(ColorPin.BLUE, blue);
+                lightSystem.setPinPercentage(ColorPin.GREEN, green);
+                lightSystem.setPinPercentage(ColorPin.RED, red);
+            }
+            isBase = true;
+        }else{
+            double amountAboveThreshold = soundLevel - baseSoundThreshold;
+            double multiplier = 3;
+            double scaledMagnitude = (currentColor.getMagnitude() * (amountAboveThreshold * multiplier)) + baseBrightness;
+            blue = adjustForMagnitude(currentColor.getBluePercent(), scaledMagnitude);
+            green = adjustForMagnitude(currentColor.getGreenPercent(), scaledMagnitude);
+            red = adjustForMagnitude(currentColor.getRedPercent(), scaledMagnitude);
+            isBase = false;
+            lightSystem.setPinPercentage(ColorPin.BLUE, blue);
+            lightSystem.setPinPercentage(ColorPin.GREEN, green);
+            lightSystem.setPinPercentage(ColorPin.RED, red);
         }
     }
 }

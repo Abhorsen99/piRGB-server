@@ -13,7 +13,7 @@ The payload properties are as follows
 fade - Boolean whether or not to fade to the next color. True fades; false snaps. Default false.<br>
 soundSensitivity - Properties for controlling how the lights respond to sound <br>
 enabled - Boolean whether or not to have lights react to sound. True increases light brightness during loud moments; false disables sound sensitivity. Default false.<br>
-threshold - The percent of "loudness" that must be present before the lights will scale above base brightness. Default 70.<br>
+threshold - The percent of "loudness" that must be present before the lights will scale above base brightness. Values between 0-100. Default 70.<br>
 color - Color object <br>
 red - RGB red value for the color. Values between 0-255. Default 0.<br>
 green - RGB green value for the color. Values between 0-255 Default 0.<br> 

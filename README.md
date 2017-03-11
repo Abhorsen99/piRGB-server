@@ -55,7 +55,7 @@ Example payloads.
    "soundSensitivity": {
   	  "enabled":true,
   	  "threshold":90
-  }
+  },
   "sequence": [
      {
         "red": 255,

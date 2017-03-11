@@ -11,16 +11,18 @@ Each request requires a JSON payload to how to perform the requested action.
 The payload properties are as follows
 
 fade - Boolean whether or not to fade to the next color. True fades; false snaps. Default false.<br>
-soundSensitive - Boolean whether or not to have lights react to sound. True increases light brightness during loud moments; false disables sound sensitivity. Default false.<br>
+soundSensitivity - Properties for controlling how the lights respond to sound <br>
+enabled - Boolean whether or not to have lights react to sound. True increases light brightness during loud moments; false disables sound sensitivity. Default false.<br>
+threshold - The percent of "loudness" that must be present before the lights will scale above base brightness. Default 70.<br>
 color - Color object <br>
-red - RGB red value for the color. Values between 0-255<br>
-green - RGB green value for the color. Values between 0-255<br> 
-blue - RGB blue value for the color. Values between 0-255<br>
-magnitude - Percentage brightness for the color. Values 0-100<br>
-interval - Interval (in seconds) to display each color in a sequence<br>
+red - RGB red value for the color. Values between 0-255. Default 0.<br>
+green - RGB green value for the color. Values between 0-255 Default 0.<br> 
+blue - RGB blue value for the color. Values between 0-255 Default 0.<br>
+magnitude - Percentage brightness for the color. Values 0-100 Default 0.<br>
+interval - Interval (in seconds) to display each color in a sequence Default 0.<br>
 
 
-Example payloads
+Example payloads.
 
 ###/off###
 ```
@@ -38,7 +40,10 @@ Example payloads
      "magnitude": 100
   },
   "fade": true,
-  "soundSensitive":true
+  "soundSensitivity": {
+  	  "enabled":false,
+  	  "threshold":70
+  }
 }
 ```
 
@@ -47,7 +52,10 @@ Example payloads
 {
   "fade": false,
   "interval": 10,
-  "soundSensitive":true,
+   "soundSensitivity": {
+  	  "enabled":true,
+  	  "threshold":90
+  }
   "sequence": [
      {
         "red": 255,

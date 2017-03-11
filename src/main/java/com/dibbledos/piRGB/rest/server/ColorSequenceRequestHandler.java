@@ -25,9 +25,9 @@ public class ColorSequenceRequestHandler extends BaseColorRequestHandler {
 
         Thread t1 = new Thread(() -> {
             if (shouldFade) {
-                controller.fadeSequence(colors, showInterval, request.getSoundSensitive());
+                controller.fadeSequence(colors, showInterval, request.getSoundSensitivity());
             } else {
-                controller.showSequence(colors, showInterval, request.getSoundSensitive());
+                controller.showSequence(colors, showInterval, request.getSoundSensitivity());
             }
         });
         t1.start();

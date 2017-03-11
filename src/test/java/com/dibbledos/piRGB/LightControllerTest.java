@@ -2,6 +2,7 @@ package com.dibbledos.piRGB;
 
 import com.dibbledos.piRGB.lightSystems.LightSystem;
 import com.dibbledos.piRGB.rest.entities.Color;
+import com.dibbledos.piRGB.rest.entities.SoundProperties;
 import com.dibbledos.piRGB.soundSensitivity.MicReader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class LightControllerTest {
+    private SoundProperties soundDisabled;
+    private SoundProperties soundEnabled;
+
     @Mock
     private LightSystem lightSystem;
     @Mock
@@ -29,11 +33,13 @@ class LightControllerTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.initMocks(this);
+        soundDisabled = new SoundProperties();
+        soundEnabled = new SoundProperties(true, 70);
     }
 
     @Test
     void testThatShowColorSetsColorForEachPin() {
-        controller.showColor(new Color(0, 0, 0, 0), false);
+        controller.showColor(new Color(0, 0, 0, 0), soundDisabled);
         verify(lightSystem).setPinPercentage(ColorPin.BLUE, 0);
         verify(lightSystem).setPinPercentage(ColorPin.GREEN, 0);
         verify(lightSystem).setPinPercentage(ColorPin.RED, 0);
@@ -42,36 +48,36 @@ class LightControllerTest {
     @Test
     void testThatShowColorSetsCurrentColorToRequested() {
         Color expected = new Color(1, 2, 3, 4);
-        controller.showColor(expected, false);
+        controller.showColor(expected, soundDisabled);
         assertEquals(expected, controller.currentColor);
     }
 
     @Test
     void testThatSequenceResetWhenShowColorCalled() {
         Color expected = new Color(1, 2, 3, 4);
-        controller.showColor(expected, false);
+        controller.showColor(expected, soundDisabled);
         assertTrue(controller.wasResetCalled);
     }
 
     @Test
     void testThatMicProcessingCalledWhenShowColorCalled() {
         Color expected = new Color(1, 2, 3, 4);
-        controller.showColor(expected, false);
+        controller.showColor(expected, soundDisabled);
         assertTrue(controller.wasMicProcessingCalled);
     }
 
     @Test
     void testThatSoundSensitiveFlagSetWhenShowColorCalled() {
         Color expected = new Color(1, 2, 3, 4);
-        controller.showColor(expected, true);
-        assertTrue(controller.soundSensitive);
-        controller.showColor(expected, false);
-        assertFalse(controller.soundSensitive);
+        controller.showColor(expected, soundEnabled);
+        assertTrue(controller.soundSensitivity.isEnabled());
+        controller.showColor(expected, soundDisabled);
+        assertFalse(controller.soundSensitivity.isEnabled());
     }
 
     @Test
     void testThatShowColorRespectsColorMagnitude0() {
-        controller.showColor(new Color(255, 255, 255, 0), false);
+        controller.showColor(new Color(255, 255, 255, 0), soundDisabled);
         verify(lightSystem).setPinPercentage(ColorPin.BLUE, 0);
         verify(lightSystem).setPinPercentage(ColorPin.GREEN, 0);
         verify(lightSystem).setPinPercentage(ColorPin.RED, 0);
@@ -79,7 +85,7 @@ class LightControllerTest {
 
     @Test
     void testThatShowColorRespectsColorMagnitude100() {
-        controller.showColor(new Color(255, 255, 255, 100), false);
+        controller.showColor(new Color(255, 255, 255, 100), soundDisabled);
         verify(lightSystem).setPinPercentage(ColorPin.BLUE, 100);
         verify(lightSystem).setPinPercentage(ColorPin.GREEN, 100);
         verify(lightSystem).setPinPercentage(ColorPin.RED, 100);
@@ -87,7 +93,7 @@ class LightControllerTest {
 
     @Test
     void testThatShowColorRespectsColorMagnitude50() {
-        controller.showColor(new Color(255, 255, 255, 50), false);
+        controller.showColor(new Color(255, 255, 255, 50), soundDisabled);
         verify(lightSystem).setPinPercentage(ColorPin.BLUE, 50);
         verify(lightSystem).setPinPercentage(ColorPin.GREEN, 50);
         verify(lightSystem).setPinPercentage(ColorPin.RED, 50);
@@ -96,7 +102,7 @@ class LightControllerTest {
     @Test
     void testThatMagnitudeAdjustmentIsAppliedToEachColorPin() {
         Color requested = new Color(100, 200, 150, 50);
-        controller.showColor(requested, false);
+        controller.showColor(requested, soundDisabled);
         verify(lightSystem).setPinPercentage(ColorPin.BLUE,  controller.adjustForMagnitude(requested.getBluePercent(), requested.getMagnitude()));
         verify(lightSystem).setPinPercentage(ColorPin.GREEN, controller.adjustForMagnitude(requested.getGreenPercent(), requested.getMagnitude()));
         verify(lightSystem).setPinPercentage(ColorPin.RED, controller.adjustForMagnitude(requested.getRedPercent(), requested.getMagnitude()));
@@ -112,9 +118,9 @@ class LightControllerTest {
     @Test
     void testThatResetSetsSequenceAndSoundFlagsToFalse() {
         controller.shouldContinueSequence = true;
-        controller.soundSensitive = true;
+        controller.soundSensitivity.setEnabled(true);
         controller.resetLights();
-        assertFalse(controller.soundSensitive);
+        assertFalse(controller.soundSensitivity.isEnabled());
         assertFalse(controller.shouldContinueSequence);
     }
 
@@ -140,11 +146,25 @@ class LightControllerTest {
     }
 
     @Test
-    void testSoundSensitiveLightsGives100MagnitudeForFullSound() throws InterruptedException {
+    void testSettingSoundThresholdTo100() {
         controller.currentColor = new Color(255, 255, 255, 100);
+        controller.soundSensitivity = new SoundProperties(true, 100);
         double micInput = 1;
         controller.updateForSoundLevel(micInput);
-        verify(lightSystem, times(3)).setPinPercentage(any(), eq(100));
+        verify(lightSystem, times(3)).setPinPercentage(any(), eq(10));
+    }
+
+    @Test
+    void testSettingSoundThresholdTo50() {
+        controller.currentColor = new Color(255, 255, 255, 100);
+        controller.soundSensitivity = new SoundProperties(true, 50);
+        double micInput = .50;
+        controller.updateForSoundLevel(micInput);
+        verify(lightSystem, times(3)).setPinPercentage(any(), eq(10));
+
+        micInput = .51;
+        controller.updateForSoundLevel(micInput);
+        verify(lightSystem, times(3)).setPinPercentage(any(), eq(12));
     }
 
     class Below10 implements ArgumentMatcher<Integer>{

@@ -42,11 +42,11 @@ public class MicReader {
     }
 
     private double applyLogAndScale(double rawVolume){
-        return rawVolume == 0 ? 0 : Math.log10(rawVolume) * 22.1545924031; //The max raw value is 32639. multiplying like this makes that value map to 100
+        return rawVolume == 0 ? 0 : Math.log10(rawVolume) * 22.147; //The max raw value is 32754. multiplying like this makes that value map to 100
     }
 
     /**
-     * Theoretical max is 32639
+     * Theoretical max is 32754
      */
     private short getMaxValueFromInput(byte[] buffer){
         short max = 0;

@@ -2,6 +2,7 @@ package com.dibbledos.piRGB.rest.server;
 
 import com.dibbledos.piRGB.rest.entities.Color;
 import com.dibbledos.piRGB.rest.entities.SequenceRequest;
+import com.dibbledos.piRGB.rest.entities.SoundProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
@@ -26,28 +27,30 @@ class ColorSequenceRequestHandlerTest extends HandlerBaseTest {
     void testCorrectControllerCalledFadingSequence() throws IOException {
         request.setFade(true);
         callProcess();
-        verify(controller).fadeSequence(request.getSequence(), request.getInterval(), request.getSoundSensitive());
+        verify(controller).fadeSequence(request.getSequence(), request.getInterval(), request.getSoundSensitivity());
     }
 
     @Test
     void testCorrectControllerCalledNotFadingSequence() throws IOException {
         callProcess();
-        verify(controller).showSequence(request.getSequence(), request.getInterval(), request.getSoundSensitive());
+        verify(controller).showSequence(request.getSequence(), request.getInterval(), request.getSoundSensitivity());
     }
 
     @Test
     void testSoundSensitivePassedWhenFadingSequence() throws IOException {
-        request.setSoundSensitive(true);
+        SoundProperties soundEnabled = new SoundProperties(true, 70);
+        request.setSoundSensitivity(soundEnabled);
         request.setFade(true);
         callProcess();
-        verify(controller).fadeSequence(request.getSequence(), request.getInterval(), true);
+        verify(controller).fadeSequence(request.getSequence(), request.getInterval(), soundEnabled);
     }
 
     @Test
     void testSoundSensitivePassedNotFading() throws IOException {
-        request.setSoundSensitive(true);
+        SoundProperties soundEnabled = new SoundProperties(true, 70);
+        request.setSoundSensitivity(soundEnabled);
         callProcess();
-        verify(controller).showSequence(request.getSequence(), request.getInterval(), true);
+        verify(controller).showSequence(request.getSequence(), request.getInterval(), soundEnabled);
     }
 
     @Test
@@ -56,7 +59,7 @@ class ColorSequenceRequestHandlerTest extends HandlerBaseTest {
         request.setInterval(expectedInterval);
         request.setFade(true);
         callProcess();
-        verify(controller).fadeSequence(request.getSequence(), expectedInterval, request.getSoundSensitive());
+        verify(controller).fadeSequence(request.getSequence(), expectedInterval, request.getSoundSensitivity());
     }
 
     @Test
@@ -64,7 +67,7 @@ class ColorSequenceRequestHandlerTest extends HandlerBaseTest {
         int expectedInterval = 13;
         request.setInterval(expectedInterval);
         callProcess();
-        verify(controller).showSequence(request.getSequence(), expectedInterval, request.getSoundSensitive());
+        verify(controller).showSequence(request.getSequence(), expectedInterval, request.getSoundSensitivity());
     }
 
     @Test
@@ -76,7 +79,7 @@ class ColorSequenceRequestHandlerTest extends HandlerBaseTest {
         request.setSequence(expectedColors);
         request.setFade(true);
         callProcess();
-        verify(controller).fadeSequence(expectedColors, request.getInterval(), request.getSoundSensitive());
+        verify(controller).fadeSequence(expectedColors, request.getInterval(), request.getSoundSensitivity());
     }
 
     @Test
@@ -87,7 +90,7 @@ class ColorSequenceRequestHandlerTest extends HandlerBaseTest {
         expectedColors.add(new Color(255, 255, 255, 100));
         request.setSequence(expectedColors);
         callProcess();
-        verify(controller).showSequence(expectedColors, request.getInterval(), request.getSoundSensitive());
+        verify(controller).showSequence(expectedColors, request.getInterval(), request.getSoundSensitivity());
     }
 
     private void callProcess() throws IOException {

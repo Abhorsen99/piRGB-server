@@ -12,7 +12,7 @@ public class SequenceRequest {
     private Boolean fade = false;
     private Integer interval = 1;
     private List<Color> sequence = new ArrayList<>();
-    private Boolean soundSensitive = false;
+    private SoundProperties soundSensitivity = new SoundProperties();
 
     public Boolean getFade() {
         return fade;
@@ -38,11 +38,11 @@ public class SequenceRequest {
         this.sequence = sequence;
     }
 
-    public Boolean getSoundSensitive() {
-        return soundSensitive;
+    public SoundProperties getSoundSensitivity() {
+        return soundSensitivity;
     }
 
-    public void setSoundSensitive(Boolean soundSensitive) {
-        this.soundSensitive = soundSensitive;
+    public void setSoundSensitivity(SoundProperties soundSensitivity) {
+        this.soundSensitivity = soundSensitivity;
     }
 }

@@ -2,6 +2,7 @@ package com.dibbledos.piRGB;
 
 import com.dibbledos.piRGB.lightSystems.LightSystem;
 import com.dibbledos.piRGB.rest.entities.Color;
+import com.dibbledos.piRGB.rest.entities.SoundProperties;
 import com.dibbledos.piRGB.soundSensitivity.MicReader;
 
 import java.util.List;
@@ -15,7 +16,7 @@ public class LightController {
     private Thread sequenceThread = new Thread();
     private static MicReader micReader;
     private static Thread micThread;
-    protected static boolean soundSensitive = false;
+    protected static SoundProperties soundSensitivity = new SoundProperties();
     protected boolean isBase = false;
 
     public LightController(LightSystem lightSystem, MicReader micReader) {
@@ -25,10 +26,10 @@ public class LightController {
         currentColor = new Color(0, 0, 0, 0);
     }
 
-    public void showColor(Color requestedColor, boolean soundSensitive) {
+    public void showColor(Color requestedColor, SoundProperties soundSensitive) {
         System.out.println("Request to set color to " + requestedColor);
         resetLights();
-        this.soundSensitive = soundSensitive;
+        this.soundSensitivity = soundSensitive;
         showColorImpl(requestedColor);
         startMicProcessing();
     }
@@ -58,9 +59,9 @@ public class LightController {
         currentColor = new Color();
     }
 
-    public void fadeTo(Color requestedColor, boolean soundSensitive) {
+    public void fadeTo(Color requestedColor, SoundProperties soundSensitive) {
         resetLights();
-        this.soundSensitive = soundSensitive;
+        this.soundSensitivity = soundSensitive;
         fadeToImpl(requestedColor);
         startMicProcessing();
     }
@@ -116,10 +117,10 @@ public class LightController {
         }
     }
 
-    public void fadeSequence(List<Color> colors, int showInterval, Boolean soundSensitive) {
+    public void fadeSequence(List<Color> colors, int showInterval, SoundProperties soundSensitive) {
         resetLights();
         shouldContinueSequence = true;
-        this.soundSensitive = soundSensitive;
+        this.soundSensitivity = soundSensitive;
         sequenceThread = new Thread(() -> {
             while (shouldContinueSequence) {
                 for (Color color : colors) {
@@ -141,9 +142,9 @@ public class LightController {
         startMicProcessing();
     }
 
-    public void showSequence(List<Color> colors, int showInterval, Boolean soundSensitive) {
+    public void showSequence(List<Color> colors, int showInterval, SoundProperties soundSensitive) {
         resetLights();
-        this.soundSensitive = soundSensitive;
+        this.soundSensitivity = soundSensitive;
         shouldContinueSequence = true;
         sequenceThread = new Thread(() -> {
             while (shouldContinueSequence) {
@@ -177,7 +178,7 @@ public class LightController {
 
     protected void resetLights() {
         shouldContinueSequence = false;
-        soundSensitive = false;
+        soundSensitivity.setEnabled(false);
         try {
             System.out.println("Waiting for existing sequence to stop");
             sequenceThread.join();
@@ -197,7 +198,7 @@ public class LightController {
 
     private void updateForSounds() {
         isBase = false;
-        while (soundSensitive) {
+        while (soundSensitivity.isEnabled()) {
             double soundLevel = micReader.getLevelScalingNumber();
             updateForSoundLevel(soundLevel);
         }
@@ -206,7 +207,8 @@ public class LightController {
     protected void updateForSoundLevel(double soundLevel) {
         int blue, green, red;
         final int baseBrightness = 10;
-        final double baseSoundThreshold = 0.70;
+        final double baseSoundThreshold = soundSensitivity.getThreshold() / 100.0;
+        final int maxBrightness = 100;
 
         if(soundLevel <= baseSoundThreshold){
             if(!isBase){
@@ -220,7 +222,7 @@ public class LightController {
             isBase = true;
         }else{
             double amountAboveThreshold = soundLevel - baseSoundThreshold;
-            double multiplier = 3;
+            double multiplier = (maxBrightness-baseBrightness) / ((1-baseSoundThreshold) * 100);
             double scaledMagnitude = (currentColor.getMagnitude() * (amountAboveThreshold * multiplier)) + baseBrightness;
             blue = adjustForMagnitude(currentColor.getBluePercent(), scaledMagnitude);
             green = adjustForMagnitude(currentColor.getGreenPercent(), scaledMagnitude);

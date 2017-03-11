@@ -8,7 +8,7 @@ public class ShowColorRequest {
 
     private Color color = new Color();
     private Boolean fade = false;
-    private Boolean soundSensitive = false;
+    private SoundProperties soundSensitivity = new SoundProperties();
 
     public Color getColor() {
         return color;
@@ -26,11 +26,11 @@ public class ShowColorRequest {
         this.fade = fade;
     }
 
-    public Boolean getSoundSensitive() {
-        return soundSensitive;
+    public SoundProperties getSoundSensitivity() {
+        return soundSensitivity;
     }
 
-    public void setSoundSensitive(Boolean soundSensitive) {
-        this.soundSensitive = soundSensitive;
+    public void setSoundSensitivity(SoundProperties soundSensitivity) {
+        this.soundSensitivity = soundSensitivity;
     }
 }

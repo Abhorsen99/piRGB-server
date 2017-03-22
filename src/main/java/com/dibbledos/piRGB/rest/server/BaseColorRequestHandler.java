@@ -21,22 +21,31 @@ public abstract class BaseColorRequestHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
         String requestType = httpExchange.getRequestMethod(); //Post, get, etc
-
-        if (requestType.equalsIgnoreCase("POST")) {
-            JsonNode requestInput = mapper.readValue(httpExchange.getRequestBody(), JsonNode.class);
-
-            String response = processRequest(requestInput);
-            Headers headers = httpExchange.getResponseHeaders();
-            headers.add("Access-Control-Allow-Origin", "*");
-            httpExchange.sendResponseHeaders(200, response.length());
-            OutputStream os = httpExchange.getResponseBody();
-            os.write(response.getBytes());
-            os.close();
-        }else{
-            httpExchange.sendResponseHeaders(400, 0);
-            OutputStream os = httpExchange.getResponseBody();
-            os.close();
+        switch(requestType.toUpperCase()){
+            case("POST"): {
+                JsonNode requestInput = mapper.readValue(httpExchange.getRequestBody(), JsonNode.class);
+                sendResponse(httpExchange, processRequest(requestInput));
+                break;
+            }
+            case("OPTIONS"): {
+                sendResponse(httpExchange, "The world is your oyster");
+                break;
+            }
+            default : {
+                httpExchange.sendResponseHeaders(400, 0);
+                OutputStream os = httpExchange.getResponseBody();
+                os.close();
+            }
         }
+    }
+
+    private void sendResponse(HttpExchange exchange, String response) throws IOException {
+        Headers headers = exchange.getResponseHeaders();
+        headers.add("Access-Control-Allow-Origin", "*");
+        exchange.sendResponseHeaders(200, response.length());
+        OutputStream os = exchange.getResponseBody();
+        os.write(response.getBytes());
+        os.close();
     }
 
     protected abstract String processRequest(JsonNode input) throws IOException;

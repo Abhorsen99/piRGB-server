@@ -3,6 +3,7 @@ package com.dibbledos.piRGB.rest.server;
 import com.dibbledos.piRGB.LightController;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -25,6 +26,8 @@ public abstract class BaseColorRequestHandler implements HttpHandler {
             JsonNode requestInput = mapper.readValue(httpExchange.getRequestBody(), JsonNode.class);
 
             String response = processRequest(requestInput);
+            Headers headers = httpExchange.getResponseHeaders();
+            headers.add("Access-Control-Allow-Origin", "*");
             httpExchange.sendResponseHeaders(200, response.length());
             OutputStream os = httpExchange.getResponseBody();
             os.write(response.getBytes());

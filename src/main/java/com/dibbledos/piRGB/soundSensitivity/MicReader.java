@@ -19,7 +19,7 @@ public class MicReader {
 
             mic.open();
             mic.start();
-        }catch (LineUnavailableException e){
+        }catch (LineUnavailableException | IllegalArgumentException e){
             micPresent = false;
             System.out.println("Mic unavailable " + e.getMessage());
         }
